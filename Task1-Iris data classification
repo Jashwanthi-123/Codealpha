@@ -1,0 +1,116 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.datasets import load_iris
+
+# Load Iris dataset from scikit-learn
+iris = load_iris()
+X = iris.data  # Features (sepal length, sepal width, petal length, petal width)
+y = iris.target  # Labels (species: 0=Setosa, 1=Versicolor, 2=Virginica)
+
+# Convert the dataset into a pandas DataFrame for easier handling
+iris_df = pd.DataFrame(data= X, columns=iris.feature_names)
+iris_df['species'] = pd.Categorical.from_codes(iris.target, iris.target_names)
+
+# Check the first few rows of the dataset
+print(iris_df.head())
+ sepal length (cm)  sepal width (cm)  petal length (cm)  petal width (cm)  \
+0                5.1               3.5                1.4               0.2   
+1                4.9               3.0                1.4               0.2   
+2                4.7               3.2                1.3               0.2   
+3                4.6               3.1                1.5               0.2   
+4                5.0               3.6                1.4               0.2   
+
+  species  
+0  setosa  
+1  setosa  
+2  setosa  
+3  setosa  
+4  setosa  
+# Split the data into training and testing sets (80% train, 20% test)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Standardizing the features (important for models like SVM)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+# Train a Support Vector Machine (SVC) model
+svm_model = SVC(kernel='linear')
+svm_model.fit(X_train_scaled, y_train)
+
+# Predict on the test set
+y_pred_svm = svm_model.predict(X_test_scaled)
+
+# Evaluate the model
+print("SVM Accuracy:", accuracy_score(y_test, y_pred_svm))
+print("Classification Report:\n", classification_report(y_test, y_pred_svm))
+SVM Accuracy: 0.9666666666666667
+Classification Report:
+               precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00        10
+           1       1.00      0.89      0.94         9
+           2       0.92      1.00      0.96        11
+
+    accuracy                           0.97        30
+   macro avg       0.97      0.96      0.97        30
+weighted avg       0.97      0.97      0.97        30
+# Train a Random Forest Classifier
+rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_model.fit(X_train, y_train)
+
+# Predict on the test set
+y_pred_rf = rf_model.predict(X_test)
+
+# Evaluate the model
+print("Random Forest Accuracy:", accuracy_score(y_test, y_pred_rf))
+print("Classification Report:\n", classification_report(y_test, y_pred_rf))
+Random Forest Accuracy: 1.0
+Classification Report:
+               precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00        10
+           1       1.00      1.00      1.00         9
+           2       1.00      1.00      1.00        11
+
+    accuracy                           1.00        30
+   macro avg       1.00      1.00      1.00        30
+weighted avg       1.00      1.00      1.00        30
+# Confusion Matrix for SVM
+cm_svm = confusion_matrix(y_test, y_pred_svm)
+print("Confusion Matrix for SVM:\n", cm_svm)
+
+# Confusion Matrix for Random Forest
+cm_rf = confusion_matrix(y_test, y_pred_rf)
+print("Confusion Matrix for Random Forest:\n", cm_rf)
+
+# Plotting Confusion Matrix for better visualization
+plt.figure(figsize=(10,5))
+plt.subplot(1, 2, 1)
+plt.title("SVM Confusion Matrix")
+plt.imshow(cm_svm, cmap='Blues', interpolation='nearest')
+plt.colorbar()
+plt.xticks(np.arange(3), iris.target_names)
+plt.yticks(np.arange(3), iris.target_names)
+
+plt.subplot(1, 2, 2)
+plt.title("Random Forest Confusion Matrix")
+plt.imshow(cm_rf, cmap='Blues', interpolation='nearest')
+plt.colorbar()
+plt.xticks(np.arange(3), iris.target_names)
+plt.yticks(np.arange(3), iris.target_names)
+
+plt.tight_layout()
+plt.show()
+Confusion Matrix for SVM:
+ [[10  0  0]
+ [ 0  8  1]
+ [ 0  0 11]]
+Confusion Matrix for Random Forest:
+ [[10  0  0]
+ [ 0  9  0]
+ [ 0  0 11]]
